@@ -22,6 +22,9 @@ Place the appsettings.json file at a suitable place and relate to the file path 
 To run the application, use below command but replace /path/on/host/appsettings.json with the path to your appsettings.json
 ```
 **Example to run. Change according to version and hash**
-docker run -v /path/on/host/appsettings.json:/app/appsettings.json -p 5799:5799 docker pull docker pull ghcr.io/hodladi/hodladiwallet/hodlwallet:main-caxxxx-axxxx
+
+docker pull ghcr.io/hodladi/hodladiwallet/hodlwallet:main-caxxxx-axxxx
+
+docker run -v /path/on/host/appsettings.json:/app/appsettings.json -p 5799:5799
 ```
 This will start the container and the application will listen to port 5799 in a browser.
