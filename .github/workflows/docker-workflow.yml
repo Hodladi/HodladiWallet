@@ -45,5 +45,5 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/hodladi/hodladiwallet/hodladiwallet:${{ steps.prep.outputs.tag }}-${{ matrix.tag_suffix }}
+          tags: ghcr.io/hodladi/hodladiwallet/hodlwallet:${{ steps.prep.outputs.tag }}-${{ matrix.tag_suffix }}
           platforms: ${{ matrix.platform }}
