@@ -22,12 +22,12 @@ Place the appsettings.json file at a suitable place and relate to the file path 
 To run the application, use below command but replace /path/on/host/appsettings.json with the path to your appsettings.json
 ```
 **Start AMD64 version.**
-docker run -v /path/on/host/appsettings.json:/app/appsettings.json -p 5799:5799 docker pull ghcr.io/hodladi/hodladiwallet/hodladiwallet:main-51ef0b6-amd64
+docker run -v /path/on/host/appsettings.json:/app/appsettings.json -p 5799:5799 docker pull docker pull ghcr.io/hodladi/hodladiwallet/hodlwallet:main-caeaa91-amd64
 
 **Start ARM64 version.**
-docker run -v /path/on/host/appsettings.json:/app/appsettings.json -p 5799:5799 docker pull ghcr.io/hodladi/hodladiwallet/hodladiwallet:main-51ef0b6-arm64
+docker run -v /path/on/host/appsettings.json:/app/appsettings.json -p 5799:5799 docker pull docker pull ghcr.io/hodladi/hodladiwallet/hodlwallet:main-caeaa91-arm64
 
 **Start ARMv7 version.**
-docker run -v /path/on/host/appsettings.json:/app/appsettings.json -p 5799:5799 docker pull ghcr.io/hodladi/hodladiwallet/hodladiwallet:main-51ef0b6-armv7
+docker run -v /path/on/host/appsettings.json:/app/appsettings.json -p 5799:5799 docker pull docker pull ghcr.io/hodladi/hodladiwallet/hodlwallet:main-caeaa91-armv7
 ```
 This will start the container and the application will listen to port 5799 in a browser.
