@@ -30,3 +30,13 @@ docker pull ghcr.io/hodladi/hodladiwallet/hodlwallet:main-caxxxx-axxxx
 docker run -v /path/on/host/appsettings.json:/app/appsettings.json -p 5799:5799
 ```
 This will start the container and the application will listen to port 5799 in a browser.
+
+![image](https://github.com/Hodladi/HodladiWallet/assets/91490683/a76774aa-6a97-47cf-be2a-199471678487)
+
+![image](https://github.com/Hodladi/HodladiWallet/assets/91490683/e5e1070b-c160-4418-a952-76381c5fa65f)
+
+![image](https://github.com/Hodladi/HodladiWallet/assets/91490683/7804d8e0-b9d7-407b-8cff-b1dfec958356)
+
+![image](https://github.com/Hodladi/HodladiWallet/assets/91490683/7cc23af4-0054-4d08-a118-d273e02c362b)
+
+![image](https://github.com/Hodladi/HodladiWallet/assets/91490683/903ba150-549a-4145-a6f9-6894adcf5248)
