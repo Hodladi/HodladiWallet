@@ -1,4 +1,6 @@
-This is a .NET 8 Blazor Web application that works as an UI for ([Phoenix Server](https://phoenix.acinq.co/server)
+This is a .NET 8 Blazor Web application that works as an UI for [Phoenix Server](https://phoenix.acinq.co/server)
+
+It's also a PWA application so you can install it from your web browser.
 
 It's avalible for ARM64, ARMv7 and AMD64 architecture, see packages to determine which to pull.
 
