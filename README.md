@@ -25,9 +25,9 @@ To run the application, use below command but replace /path/on/host/appsettings.
 ```
 **Example to run. Change according to version and hash**
 
-docker pull ghcr.io/hodladi/hodladiwallet/hodlwallet:main-caxxxx-axxxx
+docker pull ghcr.io/hodladi/hodladiwallet/hodlwallet:amd64-latest
 
-docker run -v /path/on/host/appsettings.json:/app/appsettings.json -p 5799:5799
+docker run -v /path/on/host/appsettings.json:/app/appsettings.json -p 5799:5799 ghcr.io/hodladi/hodladiwallet/hodlwallet:amd64-latest
 ```
 This will start the container and the application will listen to port 5799 in a browser.
 
