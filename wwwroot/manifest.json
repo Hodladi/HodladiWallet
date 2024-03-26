@@ -1,0 +1,21 @@
+{
+  "short_name": "LN Wallet",
+  "name": "Hodladi Wallet",
+  "icons": [
+    {
+      "src": "logo.jpg",
+      "type": "image/jpg",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo.jpg",
+      "type": "image/jpg",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#FF9900",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#000000"
+}
