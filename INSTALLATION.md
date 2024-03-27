@@ -46,8 +46,11 @@ Then add the following in that file
     },
     "AllowedHosts": "*",
     "PhoenixApi": {
-        "BaseUrl": "phoenix server ip and port", 
-        "Password": "phoneix server password"
+        "BaseUrl": "phoenix server ip and port",
+        "Password": "phoenix server password"
+    },
+    "ApplicationSettings": {
+        "Port": 5799
     }
 }
 ```
