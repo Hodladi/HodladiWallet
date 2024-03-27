@@ -1,7 +1,6 @@
 using HodladiWallet.Components;
 using HodladiWallet.Models;
 using HodladiWallet.Services;
-using HodladiWallet.Hubs;
 
 namespace HodladiWallet;
 public class Program
