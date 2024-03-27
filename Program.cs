@@ -1,6 +1,7 @@
 using HodladiWallet.Components;
 using HodladiWallet.Models;
 using HodladiWallet.Services;
+using HodladiWallet.Hubs;
 
 namespace HodladiWallet;
 public class Program
@@ -15,6 +16,9 @@ public class Program
         builder.Services.AddSingleton(phoenixApiConfig);
         builder.Services.AddScoped<ILightningInvoiceDecoder, LightningInvoiceDecoder>();
 
+        builder.Services.AddControllers();
+        builder.Services.AddSignalR();
+
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
 
@@ -24,10 +28,9 @@ public class Program
             client.BaseAddress = new Uri(config.BaseUrl);
         });
 
-        // Configure Kestrel to listen on port 5799 for HTTP
         builder.WebHost.ConfigureKestrel(serverOptions =>
         {
-            serverOptions.ListenAnyIP(5799); // Listen for HTTP connections on port 5799
+            serverOptions.ListenAnyIP(5799);
         });
 
         var app = builder.Build();
@@ -37,10 +40,16 @@ public class Program
             app.UseExceptionHandler("/Error");
             app.UseHsts();
         }
-	    
+
         app.UseStaticFiles();
+        app.UseRouting();
         app.UseAntiforgery();
-        app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+            endpoints.MapHub<NotificationHub>("/notificationhub");
+            endpoints.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+        });
 
         app.Run();
     }
