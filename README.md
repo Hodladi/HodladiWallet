@@ -38,8 +38,11 @@ Place the appsettings.json file at a suitable place and relate to the file path 
     },
     "AllowedHosts": "*",
     "PhoenixApi": {
-        "BaseUrl": "http://ip-to-Phoneix-server:port",
-        "Password": "password-to-phoneix-server"
+        "BaseUrl": "phoenix server ip and port",
+        "Password": "phoenix server password"
+    },
+    "ApplicationSettings": {
+        "Port": 5799
     }
 }
 ```
