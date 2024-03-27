@@ -1,6 +1,9 @@
 This is a .NET 8 Blazor Web application that works as an UI for [Phoenix Server](https://phoenix.acinq.co/server)
 
 It's also a PWA application so you can install it from your web browser.
+Since Apple is retarded in so many ways with their way of doing stuff using this application as a PWA application can be frustrating.
+If you let the wallet run in the background and it loses it's connection to the server you might need to fully close it and open it again.
+On android, just swipe down and you refresh the app.
 
 Things that work:
 - See wallet balance
