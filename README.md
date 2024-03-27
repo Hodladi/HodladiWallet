@@ -21,6 +21,8 @@ As you can see above it's only the basic functionalitys working right now and as
 
 It's avalible for ARM64, ARMv7 and AMD64 architecture, see packages to determine which to pull.
 
+[More detailed installation instructions](https://github.com/Hodladi/HodladiWallet/blob/main/INSTALLATION.md)
+
 To use this application you need to add a appsettings.json file that should contain the below.
 Place the appsettings.json file at a suitable place and relate to the file path in the next step.
 ```
