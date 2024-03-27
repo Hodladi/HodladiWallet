@@ -1,5 +1,5 @@
-using HodladiWallet.Components;
 using HodladiWallet.Models;
+using HodladiWallet.Components;
 using HodladiWallet.Services;
 
 namespace HodladiWallet;
@@ -16,7 +16,12 @@ public class Program
 		builder.Services.AddScoped<ILightningInvoiceDecoder, LightningInvoiceDecoder>();
 
 		builder.Services.AddRazorComponents()
-			.AddInteractiveServerComponents();
+			.AddInteractiveServerComponents()
+			.AddHubOptions(options =>
+			{
+				options.ClientTimeoutInterval = TimeSpan.FromMinutes(15);
+				options.KeepAliveInterval = TimeSpan.FromSeconds(5);
+			});
 
 		builder.Services.AddHttpClient<IInvoiceService, InvoiceService>((serviceProvider, client) =>
 		{

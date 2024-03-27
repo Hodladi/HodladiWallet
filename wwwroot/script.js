@@ -29,17 +29,3 @@ function stopQrScanner() {
         });
     }
 }
-
-
-                    const connection = new signalR.HubConnectionBuilder()
-        .withUrl("/notificationhub")
-        .build();
-
-    connection.on("ReceivePayment", function (payment) {
-        alert(`Payment Received: ${payment.amountSat} sats`);
-        window.location.href = "/";
-    });
-
-    connection.start().catch(function (err) {
-        return console.error(err.toString());
-    });
