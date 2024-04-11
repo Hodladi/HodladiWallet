@@ -1,0 +1,90 @@
+trigger:
+- master
+
+pool:
+  name: 'freber-server-agent'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+stages:
+- stage: Build
+  jobs:
+  - job: BuildJob
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '8.x'
+        installationPath: $(Agent.ToolsDirectory)/dotnet
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration)'
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'publish'
+        publishWebProjects: true
+        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+        zipAfterPublish: true
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+- stage: Deploy
+  dependsOn: Build
+  condition: succeeded('Build')
+  jobs:
+  - deployment: DeploymentJob
+    environment: 'BC-Production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(System.ArtifactsDirectory)'
+
+          - powershell: |
+              $zipPath = "$(System.ArtifactsDirectory)/drop/s.zip" # Ensure this matches your ZIP file name
+              $extractPath = "$(System.ArtifactsDirectory)/extracted"
+              Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+
+              $configPath = Join-Path -Path $extractPath -ChildPath "appsettings.json"
+              if (Test-Path -Path $configPath) {
+                  $json = Get-Content -Path $configPath | ConvertFrom-Json
+                  $json.PhoenixApi.BaseUrl = "$(PhoenixApi.BaseUrl)"
+                  $json.PhoenixApi.Password = "$(PhoenixApi.Password)"
+                  $json | ConvertTo-Json -Depth 10 | Set-Content -Path $configPath
+                  Write-Output "appsettings.json updated successfully."
+              } else {
+                  Write-Error "appsettings.json not found at path: $configPath"
+              }
+
+              Compress-Archive -Path "$extractPath\*" -DestinationPath $zipPath -Force
+            displayName: 'Update appsettings.json'
+
+          - task: IISWebAppDeploymentOnMachineGroup@0
+            inputs:
+              WebSiteName: "HodladiWallet"
+              Package: "$(System.ArtifactsDirectory)/**/*.zip"
+              RemoveAdditionalFilesFlag: true
+              TakeAppOfflineFlag: true
+              XmlTransformation: true
+

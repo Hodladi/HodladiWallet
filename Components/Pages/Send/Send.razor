@@ -1,0 +1,270 @@
+﻿@page "/send"
+@using System.Globalization
+@using HodladiWallet.Models
+@using HodladiWallet.Services
+@using HodladiWallet.Components.Layout
+
+@inject IPaymentService InvoiceService
+@inject NavigationManager NavigationManager
+@inject ILightningService LightningService
+@inject ILightningAddressService LightningAddressService
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Send</PageTitle>
+<HeaderComponent Title="Send sats" />
+<div class="@(_isLoading ? "blurred-when-loading" : "") centered-content @(_showAmountAndComment ? "blurred-when-loading" : "")">
+	<EditForm Model="@_invoiceRequest" OnValidSubmit="HandleValidSubmit">
+		@if (_invoiceAmount > 0 && _showAmountAndComment == false)
+		{
+			<div style="text-align:center; margin-top:15px;">
+				<span style="font-size:28px;">
+					@FormatBalanceSat(_invoiceAmount)
+					<span style="color: #ff9900;">sats </span>
+					to pay!
+				</span>
+			</div>
+		}
+		else if (_invoiceAmount == 0)
+		{
+			<div style="text-align: center; margin-top: 15px;">
+				<span style="font-size: 28px;">
+					You need to set an amount!
+				</span>
+			</div>
+		}
+		<DataAnnotationsValidator />
+		<div class="input-wrapper">
+			@if (_validateButtonText == "Validate")
+			{
+				<div class="input-group">
+					<textarea placeholder="lnbc... or lnurl... or user@domain.com" id="invoice" class="form-control borderless-input" style="font-size: 14px;"
+					  @bind="@_invoiceRequest.Invoice"></textarea>
+				</div>
+				<div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;">
+					<button type="button" @onclick="ValidateInvoice" class="btn btn-outline-secondary btn-special">@_validateButtonText</button>
+					<button @onclick="() => ScanQrCode()" class="btn btn-outline-secondary btn-special">
+						<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="#FF9900" class="bi bi-camera camera-icon" viewBox="0 0 16 16">
+							<path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z" />
+							<path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0" />
+						</svg>
+					</button>
+				</div>
+			}
+			else if (_validateButtonText == "Pay")
+			{
+				<div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;">
+					@if (_invoiceAmount != 0)
+					{
+						<button type="submit" class="btn btn-outline-secondary btn-special">Pay</button>
+					}
+					<button type="button" @onclick="ClearForm" class="btn btn-outline-secondary btn-special">Clear</button>
+				</div>
+			}
+		</div>
+	</EditForm>
+</div>
+
+@if (_showAmountAndComment)
+{
+	<div class="modal-overlay" @onclick="CloseAmountAndCommentModal">
+		<div class="modal-content" @onclick:stopPropagation style="width: 80%; height:50%; padding:10px;">
+			<div class="form-group">
+				<label for="amount">Amount (sats):</label>
+				<input type="number" class="form-control" @bind="_invoiceAmount" style="width: 250px;" />
+			</div>
+			<div class="form-group my-2">
+				<label for="comment">Comment (optional):</label>
+				<textarea rows="3" class="form-control" @bind="_invoiceComment" style="width: 250px;"></textarea>
+			</div>
+			<div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;">
+				<button class="btn btn-outline-secondary btn-special" @onclick="(() => ConfirmAmountAndComment())">Confirm</button>
+				<button class="btn btn-outline-danger" btn-special @onclick="CloseAmountAndCommentModal">Cancel</button>
+			</div>
+		</div>
+	</div>
+}
+
+@if (ShowQrScanner)
+{
+	<div class="modal-overlay" @onclick="CloseScanner">
+		<div class="modal-content" @onclick:stopPropagation>
+			<div id="reader" width="300px"></div>
+		</div>
+	</div>
+}
+
+@if (_isLoading)
+{
+	<div class="spinner-overlay">
+		<div class="spinner-border text-light" role="status">
+			<span class="sr-only"></span>
+		</div>
+	</div>
+}
+
+@code {
+	private SendModel _invoiceRequest = new();
+	private PayInvoiceModel? _payInvoiceModel;
+	private bool ShowQrScanner { get; set; }
+	private bool _isLoading;
+	private bool _showAmountAndComment = false;
+	private string _validateButtonText = "Validate";
+	private int _invoiceAmount = -1;
+	private string? _invoiceComment = "";
+	private string? _validatedInvoice;
+
+	private async Task ValidateInvoice()
+	{
+		_invoiceAmount = 0;
+		if (_invoiceRequest.Invoice == "" || _invoiceRequest?.Invoice == null)
+		{
+			return;
+		}
+		if (_validateButtonText == "Pay")
+		{
+			await HandleValidSubmit();
+			return;
+		}
+
+		_isLoading = true;
+		try
+		{
+			_validatedInvoice = await LightningService.HandleInputAsync(_invoiceRequest.Invoice);
+			if (!_validatedInvoice!.StartsWith("lnbc"))
+			{
+				_showAmountAndComment = true;
+			}
+			else
+			{
+				_invoiceAmount = await LightningService.ParseInvoiceAmount(_invoiceRequest.Invoice);
+				_validateButtonText = "Pay";
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.Error.WriteLine($"Error validating invoice: {ex.Message}");
+		}
+		finally
+		{
+			_isLoading = false;
+			StateHasChanged();
+		}
+	}
+
+	private async Task HandleValidSubmit()
+	{
+		_isLoading = true;
+		try
+		{
+			_payInvoiceModel = await InvoiceService.PayIncomingInvoice(_invoiceRequest);
+			NavigationManager.NavigateTo("/");
+		}
+		catch (Exception ex)
+		{
+			Console.Error.WriteLine($"Error processing payment: {ex.Message}");
+		}
+		finally
+		{
+			_isLoading = false;
+		}
+	}
+
+	private async Task ScanQrCode(bool preferFrontCamera = false)
+	{
+		if (!string.IsNullOrWhiteSpace(_invoiceRequest.Invoice))
+		{
+			_invoiceRequest.Invoice = string.Empty;
+			_invoiceAmount = 0;
+			StateHasChanged();
+		}
+
+		ShowQrScanner = true;
+		StateHasChanged();
+		await Task.Delay(100);
+
+		var dotNetReference = DotNetObjectReference.Create(this);
+		await JsRuntime.InvokeVoidAsync("startQrScanner", dotNetReference, preferFrontCamera);
+	}
+
+
+	[JSInvokable]
+	public void ReceiveQrCodeData(string data)
+	{
+		_invoiceRequest.Invoice = data.ToLower();
+		ShowQrScanner = false;
+		StopScanning();
+		StateHasChanged();
+	}
+
+
+	private void CloseScanner()
+	{
+		ShowQrScanner = false;
+		StopScanning();
+		StateHasChanged();
+	}
+
+	private void StopScanning()
+	{
+		JsRuntime.InvokeVoidAsync("stopQrScanner");
+	}
+
+	private string FormatBalanceSat(long? balanceSat)
+	{
+		if (balanceSat.HasValue)
+		{
+			var cultureInfo = new CultureInfo("sv-SE");
+			return balanceSat.Value.ToString("N0", cultureInfo);
+		}
+
+		return "0";
+	}
+
+	private void ClearForm()
+	{
+		_invoiceRequest = new SendModel();
+
+		_payInvoiceModel = null;
+		_isLoading = false;
+		_validateButtonText = "Validate";
+		_invoiceAmount = -1;
+		_invoiceComment = null;
+
+		StateHasChanged();
+	}
+
+	private void CloseAmountAndCommentModal()
+	{
+		_showAmountAndComment = false;
+		_invoiceAmount = -1;
+		StateHasChanged();
+	}
+
+	private async Task ConfirmAmountAndComment()
+	{
+		_isLoading = true;
+		_showAmountAndComment = false;
+		await GenerateInvoiceWithAmountAndComment();
+		_validateButtonText = "Pay";
+		StateHasChanged();
+	}
+
+	private async Task GenerateInvoiceWithAmountAndComment()
+	{
+		try
+		{
+			var invoice = await LightningAddressService.AddAmountAndCommentToLnUrl(_validatedInvoice, (_invoiceAmount * 1000), _invoiceComment);
+			_invoiceRequest.Invoice = invoice;
+			_validateButtonText = "Pay";
+		}
+		catch (Exception ex)
+		{
+			Console.Error.WriteLine($"Error generating invoice: {ex.Message}");
+		}
+		finally
+		{
+			_isLoading = false;
+			StateHasChanged();
+		}
+	}
+}

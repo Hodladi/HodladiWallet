@@ -1,3 +1,4 @@
+```
 This is a .NET 8 Blazor Web application that works as an UI for [Phoenix Server](https://phoenix.acinq.co/server)
 
 It's also a PWA application so you can install it from your web browser.
@@ -65,3 +66,5 @@ This will start the container and the application will listen to port 5799 in a 
 ![image](https://github.com/Hodladi/HodladiWallet/assets/91490683/7cc23af4-0054-4d08-a118-d273e02c362b)
 
 ![image](https://github.com/Hodladi/HodladiWallet/assets/91490683/903ba150-549a-4145-a6f9-6894adcf5248)
+
+```

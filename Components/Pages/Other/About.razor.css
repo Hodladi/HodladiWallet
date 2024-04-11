@@ -1,0 +1,24 @@
+﻿.about-text-standard{
+    font-size: 14px;
+    color: #FFFFFF;
+}
+
+.about-text-orange {
+    font-size: 14px;
+    color: #FF9900;
+}
+
+a{
+    color: #FF9900;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.nav-link {
+    padding-right:0px;
+}
+
+.qr-size-about
+{
+    width: 120px;
+}

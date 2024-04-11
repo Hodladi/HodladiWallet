@@ -1,0 +1,37 @@
+﻿@page "/about"
+@using HodladiWallet.Components.Layout
+@using HodladiWallet.Models
+@using HodladiWallet.Services
+
+@inject IPaymentService InvoiceService
+
+<PageTitle>About</PageTitle>
+
+<HeaderComponent Title="About LN Wallet" />
+<span class="about-text-standard">
+	This wallet is made by <a href="https://x.com/hodladi" target="_blank">@@Hodladi</a>
+	<br /> The main purpose of this application was to have a simple UI for my self but after building it and asked around a bit about the looks and feels I decided to let it free. Feel free to use it, fork it or just whatever that fits your purpose.
+	What the application actually do is to simplify the usage of <a href="https://phoenix.acinq.co/server" target="_blank">Phoenix Server</a> with an UI.
+	You can pay regular invoices, you can pay an LNURL and you can pay to lightningaddresses. If you want to be able to receive with a lightning address there is a repo that can help you with that!
+	<a href="https://github.com/AngusP/phoenixd-lnurl" target="_blank">phoenixd-lnurl</a><br/>
+	If you want to <span style="color: #FF9900;">donate</span> to motivate me making stuff better? Feel free, it helps a lot and is much appreciated.<br />
+	<div style="align-content: center; text-align: center;" >
+		<a href="@LnUrl"><img class="qr-size-about" src="data:image/svg+xml;base64,@_response?.QrCodeBase64" alt="QR Code" /></a>
+		<br /><span style="color: #FF9900;">Scan / Click</span>
+	</div>
+</span>
+
+@code {
+	public CreateInvoiceModel _response;
+	const string LnUrl = "lightning:hodladi@hodla.nu";
+
+	protected override async Task OnInitializedAsync()
+	{
+		var qrCodeBase64 = await InvoiceService.GenerateQrCodeBase64(LnUrl);
+		_response = new CreateInvoiceModel
+			{
+				Serialized = LnUrl,
+				QrCodeBase64 = qrCodeBase64
+			};
+	}
+}
