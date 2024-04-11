@@ -7,163 +7,173 @@
 @inject IPaymentService InvoiceService
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
+@inject PhoenixApiConfig phoenixApiConfig
 
 <PageTitle>Receive</PageTitle>
 <HeaderComponent Title="Receive sats" />
 <div class="centered-content">
-	<EditForm Model="@_invoiceRequest" OnValidSubmit="HandleValidSubmit">
-		<DataAnnotationsValidator />
-		<ValidationSummary />
-		<div class="input-wrapper">
-			<div class="input-group">
-				<input placeholder="0" type="text" id="amountSat" class="borderless-input"
-					   @bind="_formattedAmount"
-					   @oninput="FormatAsSwedishCurrency" />
-			</div>
-			<div>
-				<span class="sats-label">sats</span>
-			</div>
-		</div>
-		<div class="mt-3 horizontal-center">
-			<button type="submit" class="btn btn-outline-secondary btn-special">Create invoice</button>
-			<button type="button" class="btn btn-outline-danger btn-special ms-2" @onclick="ResetForm">Reset</button>
-		</div>
-		<div class="mt-2 horizontal-center">
-			<button type="button" class="btn btn-outline-secondary btn-special" @onclick="GenerateLnUrlQrCode">LnUrl</button>
-		</div>
-	</EditForm>
+    <EditForm Model="@_invoiceRequest" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="input-wrapper">
+            <div class="input-group">
+                <input placeholder="0" type="text" id="amountSat" class="borderless-input"
+                       @bind="_formattedAmount"
+                       @oninput="FormatAsSwedishCurrency" />
+            </div>
+            <div>
+                <span class="sats-label">sats</span>
+            </div>
+        </div>
+        <div class="mt-3 horizontal-center">
+            <button type="submit" class="btn btn-outline-secondary btn-special">Create invoice</button>
+            <button type="button" class="btn btn-outline-danger btn-special ms-2" @onclick="ResetForm">Reset</button>
+        </div>
+        @if (phoenixApiConfig.LnUrlAddon)
+        {
+            <div class="mt-2 horizontal-center">
+                <button type="button" class="btn btn-outline-secondary btn-special" @onclick="GenerateLnUrlQrCode">LnUrl</button>
+            </div>
+        }
+
+    </EditForm>
 </div>
 
 <!-- Modal -->
 @if (_showModal)
 {
-	<div class="modal fade show" tabindex="-1" role="dialog" style="display:block; background-color: rgba(0,0,0,0.5);">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-body">
+    <div class="modal fade show" tabindex="-1" role="dialog" style="display:block; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
 
-					@{
-						var fontSize = _response!.AmountSat.ToString().Length >= 7 ? "24px" : "28px";
-					}
+                    @{
+                        var fontSize = _response!.AmountSat.ToString().Length >= 7 ? "24px" : "28px";
+                    }
 
-					<div class="text-center">
-						<div>
-							<span style="font-size:@fontSize;">
-								@if (_response!.AmountSat != 0)
-								{
-									<span>Invoice of @FormatBalanceSat((long)_response!.AmountSat)</span>
-									<span style="color: #ff9900;">sats</span>
-								}
-								else
-								{
-									<span>Send <span style="color: #ff9900;">sats</span> to Hodladi</span>
-								}
-							</span>
-						</div>
-					</div>
-					<div class="text-center">
-						<img class="qr-size" src="data:image/svg+xml;base64,@_response?.QrCodeBase64" alt="QR Code" />
-					</div>
-					<div style="word-wrap: break-word; max-width: 100%; text-align:center; margin-top:10px;">
-						<a href="javascript:void(0)" @onclick="CopyToClipboardAndNavigate" style="font-size: 10px; text-decoration: none; color: white;">
-							@_response?.Serialized
-						</a>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-outline-secondary" @onclick="CloseModal">Close</button>
-				</div>
-			</div>
-		</div>
-	</div>
+                    <div class="text-center">
+                        <div>
+                            <span style="font-size:@fontSize;">
+                                @if (_response!.AmountSat != 0)
+                                {
+                                    <span>Invoice of @FormatBalanceSat((long)_response!.AmountSat)</span>
+                                    <span style="color: #ff9900;">sats</span>
+                                }
+                                else
+                                {
+                                    <span>Send <span style="color: #ff9900;">sats</span> to Hodladi</span>
+                                }
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <img class="qr-size" src="data:image/svg+xml;base64,@_response?.QrCodeBase64" alt="QR Code" />
+                    </div>
+                    <div style="word-wrap: break-word; max-width: 100%; text-align:center; margin-top:10px;">
+                        <a href="javascript:void(0)" @onclick="CopyToClipboardAndNavigate" style="font-size: 10px; text-decoration: none; color: white;">
+                            @_response?.Serialized
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="CloseModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 }
 
 @code {
+    private string? _lnUrlUser { get; set; }
 
-	private string? _lnUrl = "lightning:hodladi@hodla.nu";
+    private readonly RequestModel _invoiceRequest = new RequestModel("Some sats...")
+        {
+            AmountSat = 0,
+            ExternalId = Guid.NewGuid().ToString()
+        };
+    private CreateInvoiceModel? _response;
 
-	private readonly RequestModel _invoiceRequest = new RequestModel("Some sats...")
-		{
-			AmountSat = 0,
-			ExternalId = Guid.NewGuid().ToString()
-		};
-	private CreateInvoiceModel? _response;
+    private string _formattedAmount = "";
 
-	private string _formattedAmount = "";
+    private bool _showModal;
 
-	private bool _showModal;
+    protected override async Task OnInitializedAsync()
+    {
+        _lnUrlUser = phoenixApiConfig.LnUrlUser;
+    }
 
-	private async Task HandleValidSubmit()
-	{
-		if (_invoiceRequest.AmountSat > 0)
-		{
-			_invoiceRequest.ExternalId = "Receive";
-			_response = await InvoiceService.CreateInvoiceAsync(_invoiceRequest);
-			_showModal = true;
-		}
-		StateHasChanged();
-	}
 
-	private async void GenerateLnUrlQrCode()
-	{
-		var qrCodeBase64 = await InvoiceService.GenerateQrCodeBase64(_lnUrl);
-		_response = new CreateInvoiceModel
-			{
-				Serialized = _lnUrl,
-				QrCodeBase64 = qrCodeBase64
-			};
-		_showModal = true;
-		StateHasChanged();
-	}
+    private async Task HandleValidSubmit()
+    {
+        if (_invoiceRequest.AmountSat > 0)
+        {
+            _invoiceRequest.ExternalId = "Receive";
+            _response = await InvoiceService.CreateInvoiceAsync(_invoiceRequest);
+            _showModal = true;
+        }
+        StateHasChanged();
+    }
 
-	private void CloseModal()
-	{
-		_showModal = false;
-		NavigationManager.NavigateTo("/");
-	}
+    private async void GenerateLnUrlQrCode()
+    {
+        var qrCodeBase64 = await InvoiceService.GenerateQrCodeBase64(_lnUrlUser);
+        _response = new CreateInvoiceModel
+            {
+                Serialized = _lnUrlUser,
+                QrCodeBase64 = qrCodeBase64
+            };
+        _showModal = true;
+        StateHasChanged();
+    }
 
-	private async Task CopyToClipboardAndNavigate()
-	{
-		if (_response != null)
-		{
-			await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _response.Serialized);
-		}
-	}
+    private void CloseModal()
+    {
+        _showModal = false;
+        NavigationManager.NavigateTo("/");
+    }
 
-	private void ResetForm()
-	{
-		_invoiceRequest.AmountSat = 0;
-		_response = null;
-		_formattedAmount = "";
-		StateHasChanged();
-	}
+    private async Task CopyToClipboardAndNavigate()
+    {
+        if (_response != null)
+        {
+            await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _response.Serialized);
+        }
+    }
 
-	private void FormatAsSwedishCurrency(ChangeEventArgs e)
-	{
-		var input = e.Value?.ToString() ?? "";
-		var numericInput = new string(input.Where(char.IsDigit).ToArray());
+    private void ResetForm()
+    {
+        _invoiceRequest.AmountSat = 0;
+        _response = null;
+        _formattedAmount = "";
+        StateHasChanged();
+    }
 
-		if (int.TryParse(numericInput, out var amount))
-		{
-			_invoiceRequest.AmountSat = amount;
+    private void FormatAsSwedishCurrency(ChangeEventArgs e)
+    {
+        var input = e.Value?.ToString() ?? "";
+        var numericInput = new string(input.Where(char.IsDigit).ToArray());
 
-			_formattedAmount = amount.ToString("#,0", new CultureInfo("sv-SE")).Trim();
-		}
-		else
-		{
-			_invoiceRequest.AmountSat = 0;
-			_formattedAmount = "";
-		}
-	}
+        if (int.TryParse(numericInput, out var amount))
+        {
+            _invoiceRequest.AmountSat = amount;
 
-	private string FormatBalanceSat(long? balanceSat)
-	{
-		if (balanceSat.HasValue)
-		{
-			var cultureInfo = new CultureInfo("sv-SE");
-			return balanceSat.Value.ToString("N0", cultureInfo);
-		}
+            _formattedAmount = amount.ToString("#,0", new CultureInfo("sv-SE")).Trim();
+        }
+        else
+        {
+            _invoiceRequest.AmountSat = 0;
+            _formattedAmount = "";
+        }
+    }
 
-		return "0";
-	}
+    private string FormatBalanceSat(long? balanceSat)
+    {
+        if (balanceSat.HasValue)
+        {
+            var cultureInfo = new CultureInfo("sv-SE");
+            return balanceSat.Value.ToString("N0", cultureInfo);
+        }
+
+        return "0";
+    }
 }
