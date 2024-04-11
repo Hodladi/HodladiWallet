@@ -48,6 +48,9 @@ Then add the following in that file
     "PhoenixApi": {
         "BaseUrl": "phoenix server ip and port",
         "Password": "phoenix server password"
+        /* LnUrl values below only needed if phoenixd-lnurl application is running */
+        "LnUrlAddon": false, /* If you run phoneixd-lnurl, set this to true */
+        "LnUrlUser": "lightning:hodladi@hodla.nu" /* write your phoenixd-lnurl lightningaddress here */
     },
     "ApplicationSettings": {
         "Port": 5799
