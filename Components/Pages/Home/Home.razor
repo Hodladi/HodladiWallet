@@ -43,12 +43,25 @@
 {
     <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background-color: rgba(0, 0, 0, 0.5);">
         <div class="modal-content" style="width: 80%; max-height: 65%; background: #333333; border-radius: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column;">
+            <!-- Conditional Overlay and Spinner -->
+            @if (isLoading)
+            {
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center;">
+                    <div class="spinner-border text-light" role="status" style="color: #FF9900; border: 0.25em solid currentColor; border-right-color: transparent;">
+                        <span class="sr-only"></span>
+                    </div>
+                </div>
+            }
+
+            <!-- Header -->
             <div style="padding-top: 10px; padding-left:20px;">
                 <div>
                     <span style="color:#FF9900; padding: 0px;"><strong>Confirmed received payments:</strong></span>
-                    <hr style="margin-top: 3px; margin-bottom: 10px;"/>
+                    <hr style="margin-top: 3px; margin-bottom: 10px;" />
                 </div>
             </div>
+
+            <!-- Content -->
             <div style="overflow-y: auto; flex-grow: 1; padding: 0 5px;">
                 <table style="width: 100%;">
                     <tbody>
@@ -69,13 +82,15 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Footer -->
             <div style="padding: 10px 20px; display: flex; justify-content: center; gap: 25px; background: #2c2c2c; border-top: 1px solid #444;">
                 <button class="btn btn-sm btn-outline-secondary" @onclick="LoadHistory">Refresh</button>
                 <button class="btn btn-sm btn-outline-secondary" @onclick="CloseHistory">Close</button>
             </div>
-
         </div>
     </div>
+
 }
 
 @code {
@@ -83,6 +98,8 @@
     private bool IsSats { get; set; } = true;
     private List<PaymentInfo> ListOfPayedInvoices { get; set; } = new();
     private bool _showHistory { get; set; } = false;
+    private bool isLoading = false;
+
 
     protected override async void OnInitialized()
     {
@@ -91,7 +108,9 @@
 
     private async Task LoadHistory()
     {
+        isLoading = true;
         ListOfPayedInvoices = await PaymentsReceivedService.GetPaymentsReceivedAsync();
+        isLoading = false;
         StateHasChanged();
     }
 
