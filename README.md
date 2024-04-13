@@ -1,4 +1,4 @@
-
+```
 This is a .NET 8 Blazor Web application that works as an UI for [Phoenix Server](https://phoenix.acinq.co/server)
 
 It's also a PWA application so you can install it from your web browser.
@@ -12,15 +12,14 @@ Things that work:
 - Scan QR with camera ( Requires app running on https )
 - Paste invoice string to pay invoice
 - See amount of invoice pasting / scanning before pay
+
+Things that DONT work (yet):
 - Pay invoice with no set amount
 - Pay to lightningaddress
 - Pay LNRUL invoices
-- Create invoice with no amount ( if you run phoneixd-lnurl application, separate application from this )
-
-Things that DONT work (yet):
+- Create invoice with no amount
 - There is no notifications on receive payment ( else than balance higher all of a sudden )
 - There is no notification on send payment success ( else than balance lower after try send than before )
-- No list of transactions
 
 As you can see above it's only the basic functionalitys working right now and as mentioned above. If you want to use the camera on your device the application needs to run through HTTPS. You need to setup nginx, caddy or similar with self-signed certificates.
 
@@ -42,9 +41,6 @@ Place the appsettings.json file at a suitable place and relate to the file path 
     "PhoenixApi": {
         "BaseUrl": "phoenix server ip and port",
         "Password": "phoenix server password"
-        /* LnUrl values below only needed if phoenixd-lnurl application is running, else set false and "" */
-        "LnUrlAddon": false, /* If you run phoneixd-lnurl, set this to true */
-        "LnUrlUser": "lightning:hodladi@hodla.nu" /* write your phoenixd-lnurl lightningaddress here */
     },
     "ApplicationSettings": {
         "Port": 5799

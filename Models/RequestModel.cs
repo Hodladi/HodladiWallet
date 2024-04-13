@@ -8,5 +8,5 @@ public class RequestModel(string description)
 
 	[Required(ErrorMessage = "Amount in satoshis is required.")]
 	public int AmountSat { get; set; }
-	public string? ExternalId { get; set; }
+	public string ExternalId { get; set; }
 }

@@ -6,11 +6,12 @@
 
 
 @inject IPaymentService InvoiceService
+@inject IPaymentsReceivedService PaymentsReceivedService
 
 <PageTitle>Balance</PageTitle>
 <HeaderComponent Title="Wallet balance" />
 <div style="display: flex; justify-content: center; align-items: center; height: calc(100vh - 225px); flex-direction: column;">
-    <div @onclick="ToggleSats">
+    <div @onclick="ToggleSats" style="width: 100%; display: flex; justify-content: center;">
         @if (IsSats)
         {
             <span style="font-size:40px;" class="clickable">@FormatBalanceSat(Balance?.BalanceSat) <span style="color: #FF9900;" class="clickable">sats</span></span>
@@ -18,23 +19,86 @@
         else
         {
             <span style="display: flex; align-items: center; font-size:40px;" class="clickable">
-	            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="#FF9900" class="bi bi-currency-bitcoin" viewBox="0 0 16 16">
-		            <path d="M5.5 13v1.25c0 .138.112.25.25.25h1a.25.25 0 0 0 .25-.25V13h.5v1.25c0 .138.112.25.25.25h1a.25.25 0 0 0 .25-.25V13h.084c1.992 0 3.416-1.033 3.416-2.82 0-1.502-1.007-2.323-2.186-2.44v-.088c.97-.242 1.683-.974 1.683-2.19C11.997 3.93 10.847 3 9.092 3H9V1.75a.25.25 0 0 0-.25-.25h-1a.25.25 0 0 0-.25.25V3h-.573V1.75a.25.25 0 0 0-.25-.25H5.75a.25.25 0 0 0-.25.25V3l-1.998.011a.25.25 0 0 0-.25.25v.989c0 .137.11.25.248.25l.755-.005a.75.75 0 0 1 .745.75v5.505a.75.75 0 0 1-.75.75l-.748.011a.25.25 0 0 0-.25.25v1c0 .138.112.25.25.25zm1.427-8.513h1.719c.906 0 1.438.498 1.438 1.312 0 .871-.575 1.362-1.877 1.362h-1.28zm0 4.051h1.84c1.137 0 1.756.58 1.756 1.524 0 .953-.626 1.45-2.158 1.45H6.927z" />
-	            </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="#FF9900" class="bi bi-currency-bitcoin" viewBox="0 0 16 16">
+                    <path d="M5.5 13v1.25c0 .138.112.25.25.25h1a.25.25 0 0 0 .25-.25V13h.5v1.25c0 .138.112.25.25.25h1a.25.25 0 0 0 .25-.25V13h.084c1.992 0 3.416-1.033 3.416-2.82 0-1.502-1.007-2.323-2.186-2.44v-.088c.97-.242 1.683-.974 1.683-2.19C11.997 3.93 10.847 3 9.092 3H9V1.75a.25.25 0 0 0-.25-.25h-1a.25.25 0 0 0-.25.25V3h-.573V1.75a.25.25 0 0 0-.25-.25H5.75a.25.25 0 0 0-.25.25V3l-1.998.011a.25.25 0 0 0-.25.25v.989c0 .137.11.25.248.25l.755-.005a.75.75 0 0 1 .745.75v5.505a.75.75 0 0 1-.75.75l-.748.011a.25.25 0 0 0-.25.25v1c0 .138.112.25.25.25zm1.427-8.513h1.719c.906 0 1.438.498 1.438 1.312 0 .871-.575 1.362-1.877 1.362h-1.28zm0 4.051h1.84c1.137 0 1.756.58 1.756 1.524 0 .953-.626 1.45-2.158 1.45H6.927z" />
+                </svg>
                 <span class="clickable">@FormatBalanceBtc(Balance?.BalanceSat)</span>
             </span>
         }
-
+    </div>
+    <div style="width: 100%; display: flex; justify-content: center;">
+        <a style="color: #ff9900; display: flex; justify-content: center; align-items: center; flex-direction: column;" @onclick="ShowHistory">
+            Show History<br />
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock-history" viewBox="0 0 16 16">
+                <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.58.116 1.17zm-.131 1.538q.05-.254.081-.51l.993.123a8 8 0 0 1-.23 1.155l-.964-.267q.069-.247.12-.501m-.952 2.379q.276-.436.486-.908l.914.405q-.24.54-.555 1.038zm-.964 1.205q.183-.183.35-.378l.758.653a8 8 0 0 1-.401.432z" />
+                <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0z" />
+                <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5" />
+            </svg>
+        </a>
     </div>
 </div>
+
+
+@if (_showHistory)
+{
+    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-content" style="width: 80%; max-height: 65%; background: #333333; border-radius: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column;">
+            <div style="padding-top: 10px; padding-left:20px;">
+                <div>
+                    <span style="color:#FF9900; padding: 0px;"><strong>Confirmed received payments:</strong></span>
+                    <hr style="margin-top: 3px; margin-bottom: 10px;"/>
+                </div>
+            </div>
+            <div style="overflow-y: auto; flex-grow: 1; padding: 0 5px;">
+                <table style="width: 100%;">
+                    <tbody>
+                        @foreach (var payment in ListOfPayedInvoices)
+                        {
+                            <tr>
+                                <td style="text-align: right; margin-right:10px;">
+                                    <span style="font-size: 12px;">@payment.ReceivedSat<span style="color: #ff9900;"> sats</span></span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <span>-</span>
+                                </td>
+                                <td style="text-align: left; margin-left:10px;">
+                                    <span style="font-size: 12px;">@ConvertFromUnixTimestamp(payment.CreatedAt).ToString("yyyy-MM-dd HH:mm")</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div style="padding: 10px 20px; display: flex; justify-content: center; gap: 25px; background: #2c2c2c; border-top: 1px solid #444;">
+                <button class="btn btn-sm btn-outline-secondary" @onclick="LoadHistory">Refresh</button>
+                <button class="btn btn-sm btn-outline-secondary" @onclick="CloseHistory">Close</button>
+            </div>
+
+        </div>
+    </div>
+}
 
 @code {
     private BalanceModel? Balance { get; set; }
     private bool IsSats { get; set; } = true;
+    private List<PaymentInfo> ListOfPayedInvoices { get; set; } = new();
+    private bool _showHistory { get; set; } = false;
 
     protected override async void OnInitialized()
     {
-        await LoadBalance();
+        await LoadBalance();        
+    }
+
+    private async Task LoadHistory()
+    {
+        ListOfPayedInvoices = await PaymentsReceivedService.GetPaymentsReceivedAsync();
+        StateHasChanged();
+    }
+
+    private static DateTime ConvertFromUnixTimestamp(long timestampInMilliseconds)
+    {
+        var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        return epoch.AddMilliseconds(timestampInMilliseconds).ToLocalTime();
     }
 
     private async Task LoadBalance()
@@ -52,6 +116,18 @@
         }
 
         return "0";
+    }
+
+    private async Task ShowHistory()
+    {
+        _showHistory = true;
+        await LoadHistory();        
+    }
+
+    private void CloseHistory()
+    {
+        _showHistory = false;
+        StateHasChanged();
     }
 
     private void ToggleSats()

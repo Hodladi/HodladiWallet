@@ -31,6 +31,7 @@ public class PaymentService : IPaymentService
 		{
 			new KeyValuePair<string, string>("description", createInvoiceModel.Description),
 			new KeyValuePair<string, string>("amountSat", createInvoiceModel.AmountSat.ToString()),
+			new KeyValuePair<string, string>("externalId", createInvoiceModel.ExternalId)
 		});
 
 		var password = _phoenixApiConfig.Password;
@@ -54,7 +55,7 @@ public class PaymentService : IPaymentService
 	{
 		var qr = QrCode.EncodeText(data, QrCode.Ecc.Low);
 		byte[] svgBytes = Encoding.UTF8.GetBytes(qr.ToSvgString(1));
-		return Task.FromResult(Convert.ToBase64String(svgBytes));
+        return Task.FromResult(Convert.ToBase64String(svgBytes));
 	}
 
 	public async Task<PayInvoiceModel?> PayIncomingInvoice(SendModel incomingInvoiceModel)
@@ -97,5 +98,4 @@ public class PaymentService : IPaymentService
 			return balanceResponse;
 		}
 	}
-
 }

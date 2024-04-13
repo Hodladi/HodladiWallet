@@ -14,12 +14,17 @@ public class Program
         builder.Configuration.GetSection("PhoenixApi").Bind(phoenixApiConfig);
         builder.Services.AddSingleton(phoenixApiConfig);
 
+        var otherSettingsConfig = new OtherSettings();
+        builder.Configuration.GetSection("OtherSettings").Bind(otherSettingsConfig);
+        builder.Services.AddSingleton(otherSettingsConfig);
+
         builder.Services.AddSingleton(Network.Main);
 
 		builder.Services.AddScoped<IBech32Service, Bech32Service>();
 		builder.Services.AddScoped<ILightningAddressService, LightningAddressService>();
         builder.Services.AddScoped<ILightningService, LightningService>();
         builder.Services.AddScoped<IPaymentService, PaymentService>();
+        builder.Services.AddScoped<IPaymentsReceivedService, PaymentsReceivedService>();
         builder.Services.AddScoped<HttpClient>();
 
         builder.Services.AddRazorComponents()

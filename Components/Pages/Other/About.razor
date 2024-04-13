@@ -4,6 +4,7 @@
 @using HodladiWallet.Services
 
 @inject IPaymentService InvoiceService
+@inject IJSRuntime JsRuntime
 
 <PageTitle>About</PageTitle>
 
@@ -16,8 +17,8 @@
 	<a href="https://github.com/AngusP/phoenixd-lnurl" target="_blank">phoenixd-lnurl</a><br/>
 	If you want to <span style="color: #FF9900;">donate</span> to motivate me making stuff better? Feel free, it helps a lot and is much appreciated.<br />
 	<div style="align-content: center; text-align: center;" >
-		<a href="@LnUrl"><img class="qr-size-about" src="data:image/svg+xml;base64,@_response?.QrCodeBase64" alt="QR Code" /></a>
-		<br /><span style="color: #FF9900;">Scan / Click</span>
+		<a href="javascript:void(0)" @onclick="CopyToClipboardAndNavigate"><img class="qr-size-about" src="data:image/svg+xml;base64,@_response?.QrCodeBase64" alt="QR Code" /></a>
+		<br /><span style="color: #FF9900;">Click to copy</span>
 	</div>
 </span>
 
@@ -33,5 +34,13 @@
 				Serialized = LnUrl,
 				QrCodeBase64 = qrCodeBase64
 			};
+	}
+
+	private async Task CopyToClipboardAndNavigate()
+	{
+		if (_response != null)
+		{
+			await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _response.Serialized);
+		}
 	}
 }

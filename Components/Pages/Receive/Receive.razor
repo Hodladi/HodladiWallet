@@ -7,7 +7,8 @@
 @inject IPaymentService InvoiceService
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
-@inject PhoenixApiConfig phoenixApiConfig
+@inject PhoenixApiConfig PhoenixApiConfig
+@inject OtherSettings OtherSettings
 
 <PageTitle>Receive</PageTitle>
 <HeaderComponent Title="Receive sats" />
@@ -29,7 +30,7 @@
             <button type="submit" class="btn btn-outline-secondary btn-special">Create invoice</button>
             <button type="button" class="btn btn-outline-danger btn-special ms-2" @onclick="ResetForm">Reset</button>
         </div>
-        @if (phoenixApiConfig.LnUrlAddon)
+        @if (PhoenixApiConfig.LnUrlAddon)
         {
             <div class="mt-2 horizontal-center">
                 <button type="button" class="btn btn-outline-secondary btn-special" @onclick="GenerateLnUrlQrCode">LnUrl</button>
@@ -61,7 +62,7 @@
                                 }
                                 else
                                 {
-                                    <span>Send me some <span style="color: #ff9900;">sats</span></span>
+                                    <span>Send <span style="color: #ff9900;">sats</span> to @OtherSettings.Nickname</span>
                                 }
                             </span>
                         </div>
@@ -89,7 +90,7 @@
     private readonly RequestModel _invoiceRequest = new RequestModel("Some sats...")
         {
             AmountSat = 0,
-            ExternalId = Guid.NewGuid().ToString()
+            ExternalId = "hodlwalletId_invoice"
         };
     private CreateInvoiceModel? _response;
 
@@ -97,9 +98,9 @@
 
     private bool _showModal;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        _lnUrlUser = phoenixApiConfig.LnUrlUser;
+        _lnUrlUser = PhoenixApiConfig.LnUrlUser;
     }
 
 
@@ -107,7 +108,7 @@
     {
         if (_invoiceRequest.AmountSat > 0)
         {
-            _invoiceRequest.ExternalId = "Receive";
+            _invoiceRequest.ExternalId = "hodlwalletId_invoice";
             _response = await InvoiceService.CreateInvoiceAsync(_invoiceRequest);
             _showModal = true;
         }
